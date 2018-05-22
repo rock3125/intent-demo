@@ -1,4 +1,7 @@
 data
+graph_data
 .env
 .idea
 __pycache__
+trainer/data
+trainer/logdir

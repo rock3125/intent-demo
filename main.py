@@ -16,7 +16,7 @@ def local_predict(user_input):
 # create_graph(['graph_data/news.en-00001-of-00100.parsed'], 'graph_data/graph_01.txt')
 
 # train a neural network for intent detection
-model, v2i, f2i = train('intent_training.txt', 10)
+model, v2i, f2i = train('intent_training.txt', 100)
 
 for i in range(0,5):
     print()
@@ -24,3 +24,11 @@ for i in range(0,5):
 # test the new model
 local_predict('I need to talk to the ceo !')
 local_predict('can I talk to someone at your help desk please ?')
+
+# import fileinput
+# for line in fileinput.input():
+#     line = line.strip()
+#     if len(line) > 0:
+#         local_predict(line)
+#     else:
+#         break

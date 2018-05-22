@@ -71,6 +71,9 @@ ceo::i want to talk to the chief executive officer please
 ceo::i need to speak to the chief executive officer please
 ceo::i need to speak to the chief executive officer please
 ceo::i need to speak to the chief executive officer please
+ceo::i need to talk to the chief executive officer please
+ceo::i need to talk to the chief executive officer please
+ceo::i need to talk to the chief executive officer please
 ceo::i 'd like to converse with the chief executive officer please
 ceo::i 'd like to converse with the chief executive officer please
 ceo::i 'd like to converse with the chief executive officer please

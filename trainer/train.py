@@ -12,6 +12,7 @@ from keras.models import model_from_json
 # import keras.callbacks
 from shutil import copyfile
 from parser.nl_parser import parse_text
+from semantic_graph.create_graph import avoid_verb_lemmas
 
 
 # tokens to ignore
@@ -222,7 +223,7 @@ def bow_count(sentence, words):
     sentence_words = clean_up_sentence(sentence)
     counter = 0
     for s in sentence_words:
-        if s not in ignore_words:
+        if s not in ignore_words and s not in avoid_verb_lemmas:
             found = False
             for i, w in enumerate(words):
                 if w == s:

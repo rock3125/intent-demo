@@ -9,10 +9,30 @@ def local_predict(user_input):
         print("Sorry, I do not understand your query\n")
     else:
         predictions = predict(model, user_input, v2i)
+        best = -1
+        best_value = 0.0
+        for i in range(0, len(predictions)):
+            if predictions[i] > best_value:
+                best_value = predictions[i]
+                best = i
+
+        # only convincing values are picked
+        if best_value < 0.75:
+            best = -1
+
         for i in range(0, len(predictions)):
             value = predictions[i]
             class_str = prediction_to_class(i, f2i)
-            print("I am {:.2f}% certain that \"".format(value * 100.0) + user_input + "\" means contact the " + class_str)
+            if i == best:
+                print("I am {:.2f}% certain that \"".format(
+                    value * 100.0) + user_input + "\" means contact the " + class_str + "      <-- MY PICK")
+            else:
+                print("I am {:.2f}% certain that \"".format(value * 100.0) +
+                      user_input + "\" means contact the " + class_str)
+
+        if best == -1:
+            print("Sorry, I don't know what you mean by that.")
+
         print()
 
 

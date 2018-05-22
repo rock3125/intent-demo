@@ -249,6 +249,56 @@ def prediction_to_class(index, classes):
     return "?"
 
 
+# go through the loaded training data and remove common words that exist cross classes
+# also - remove any training examples already seen, and check for empty classes at the end
+# returns the updated training_data list
+def remove_duplicates_from_training_data(training_data):
+    # adjust the training data for the classes - removing words used by both classes
+    # 1. collect the words used by all classes
+    class_dictionary = dict()
+    for item in training_data:
+        curr_class = item['class']
+        if curr_class not in class_dictionary:
+            class_dictionary[curr_class] = set()
+        for word in item['sentence']:
+            class_dictionary[curr_class].add(word)
+
+    # 2. remove words from training data
+    new_training_data = []
+    training_data_seen = set()
+    class_counter = dict()
+    for item in training_data:
+        curr_class = item['class']
+        curr_words = item['sentence']
+
+        # count members
+        if curr_class not in class_counter:
+            class_counter[curr_class] = 0
+
+        new_words = []
+        for word in curr_words:
+            found = False
+            for d_class, d_words in class_dictionary.items():
+                if d_class != curr_class and not found:
+                    if word in d_words:
+                        found = True
+            if not found:
+                new_words.append(word)
+        if len(new_words) > 0:
+            if new_words.__str__() not in training_data_seen:
+                training_data_seen.add(new_words.__str__())
+                data = {"class": curr_class, "sentence": new_words, "text": item['text']}
+                new_training_data.append(data)
+                class_counter[curr_class] += 1
+
+    # check for empty classes - very bad!
+    for class_name, count in class_counter.items():
+        if count == 0:
+            raise ValueError('class ' + class_name + ' is empty / has no unique words')
+
+    return new_training_data
+
+
 # start a training session
 def train(training_data_filename, max_epochs):
 
@@ -336,49 +386,8 @@ def train(training_data_filename, max_epochs):
             else:
                 training_data.append(sentence_cache[sentence])
 
-    # adjust the training data for the classes - removing words used by both classes
-    # 1. collect the words used by all classes
-    class_dictionary = dict()
-    for item in training_data:
-        curr_class = item['class']
-        if curr_class not in class_dictionary:
-            class_dictionary[curr_class] = set()
-        for word in item['sentence']:
-            class_dictionary[curr_class].add(word)
-
-    # 2. remove words from training data
-    new_training_data = []
-    training_data_seen = set()
-    class_counter = dict()
-    for item in training_data:
-        curr_class = item['class']
-        curr_words = item['sentence']
-
-        # count members
-        if curr_class not in class_counter:
-            class_counter[curr_class] = 0
-
-        new_words = []
-        for word in curr_words:
-            found = False
-            for d_class, d_words in class_dictionary.items():
-                if d_class != curr_class and not found:
-                    if word in d_words:
-                        found = True
-            if not found:
-                new_words.append(word)
-        if len(new_words) > 0:
-            if new_words.__str__() not in training_data_seen:
-                training_data_seen.add(new_words.__str__())
-                data = {"class": curr_class, "sentence": new_words, "text": item['text']}
-                new_training_data.append(data)
-                class_counter[curr_class] += 1
-
-    # check for empty classes - very bad!
-    for class_name, count in class_counter.items():
-        if count == 0:
-            raise ValueError('class ' + class_name + ' is empty / has no unique words')
-    training_data = new_training_data
+    # clean data
+    training_data = remove_duplicates_from_training_data(training_data)
 
     # remove the data and log directories
     clean_up(os.path.join(base_dir,'data'))

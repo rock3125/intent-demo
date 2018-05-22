@@ -4,16 +4,15 @@ import os
 import sys
 import numpy as np
 import time
-import nltk
 import logging
-# use natural language toolkit
-from nltk.stem.lancaster import LancasterStemmer
 import json
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.models import model_from_json
 # import keras.callbacks
 from shutil import copyfile
+from parser.nl_parser import parse_text
+
 
 # tokens to ignore
 ignore_words = {'?', '!', '.', '<', '>', ',', ' ', '"', '\'', '(', ')'}
@@ -25,11 +24,6 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch = logging.StreamHandler(sys.stdout)
 ch.setFormatter(formatter)
 root.addHandler(ch)
-
-
-# setup the lancaster stemmer from NLTK
-nltk.download('punkt')
-stemmer = LancasterStemmer()
 
 
 # load the neural network created by Keras (net_model_filename)
@@ -91,9 +85,13 @@ def clean_up(path):
 # tokenize a sentence and stem the words
 def clean_up_sentence(sentence):
     # tokenize the pattern
-    sentence_words = nltk.word_tokenize(sentence)
+    sentence_list = parse_text(sentence)
+    sentence_words = []
+    for spacy_sentence in sentence_list:
+        sentence_words.extend(spacy_sentence)
+
     # stem each word
-    sentence_words = [stemmer.stem(word.lower()) for word in sentence_words]
+    sentence_words = [word['lemma'] for word in sentence_words if word['tag'].startswith("NN") or word['tag'].startswith("VB")]
     return sentence_words
 
 
@@ -218,6 +216,23 @@ def bow(sentence, words):
         return np.asarray(bag), 1.0
 
 
+# return how many words in the sentence match the words of the neural network
+def bow_count(sentence, words):
+    # tokenize the pattern
+    sentence_words = clean_up_sentence(sentence)
+    counter = 0
+    for s in sentence_words:
+        if s not in ignore_words:
+            found = False
+            for i, w in enumerate(words):
+                if w == s:
+                    found = True
+                    break
+            if found:
+                counter += 1
+    return counter
+
+
 # perform a prediction using the model and a language sntence
 def predict(model, sentence, words, confidence_threshold=0.5, word_miss_threshold=0.7):
     x, miss_ratio = bow(sentence.lower(), words)
@@ -282,7 +297,7 @@ def train(training_data_filename, max_epochs):
 
             if not sentence in sentence_cache:
                 # tokenize in each word in the sentence
-                token_list = nltk.word_tokenize(sentence)
+                token_list = clean_up_sentence(sentence)
 
                 # add to our classes list
                 if cat not in class_set:
@@ -303,7 +318,7 @@ def train(training_data_filename, max_epochs):
                             new_sentence.append("<")
                             i += 1
                     elif w1 not in ignore_words:
-                        new_sentence.append(stemmer.stem(w1.lower()))
+                        new_sentence.append(w1)
                         i += 1
                     else:
                         i += 1
@@ -320,6 +335,50 @@ def train(training_data_filename, max_epochs):
 
             else:
                 training_data.append(sentence_cache[sentence])
+
+    # adjust the training data for the classes - removing words used by both classes
+    # 1. collect the words used by all classes
+    class_dictionary = dict()
+    for item in training_data:
+        curr_class = item['class']
+        if curr_class not in class_dictionary:
+            class_dictionary[curr_class] = set()
+        for word in item['sentence']:
+            class_dictionary[curr_class].add(word)
+
+    # 2. remove words from training data
+    new_training_data = []
+    training_data_seen = set()
+    class_counter = dict()
+    for item in training_data:
+        curr_class = item['class']
+        curr_words = item['sentence']
+
+        # count members
+        if curr_class not in class_counter:
+            class_counter[curr_class] = 0
+
+        new_words = []
+        for word in curr_words:
+            found = False
+            for d_class, d_words in class_dictionary.items():
+                if d_class != curr_class and not found:
+                    if word in d_words:
+                        found = True
+            if not found:
+                new_words.append(word)
+        if len(new_words) > 0:
+            if new_words.__str__() not in training_data_seen:
+                training_data_seen.add(new_words.__str__())
+                data = {"class": curr_class, "sentence": new_words, "text": item['text']}
+                new_training_data.append(data)
+                class_counter[curr_class] += 1
+
+    # check for empty classes - very bad!
+    for class_name, count in class_counter.items():
+        if count == 0:
+            raise ValueError('class ' + class_name + ' is empty / has no unique words')
+    training_data = new_training_data
 
     # remove the data and log directories
     clean_up(os.path.join(base_dir,'data'))

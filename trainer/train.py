@@ -68,7 +68,7 @@ def convert_model_to_tf(net_model_filename: str, out_dir: str):
     b.save()
 
     # done
-    session.close()
+    # session.close()
 
     if net_model_filename.endswith('_full_model.h5'):
         copyfile(net_model_filename.replace('_full_model.h5', '.f2i'), os.path.join(out_dir, 'saved_model.f2i'))
@@ -224,16 +224,7 @@ def predict(model, sentence, words, confidence_threshold=0.5, word_miss_threshol
     if miss_ratio >= word_miss_threshold:  # didn't find enough words to make it worth matching
         return -1
     # input layer is our bag of words
-    preds = model.predict(np.asarray([x]), verbose=0)[0]
-    best_index = -1
-    best_value = 0.0
-    for i in range(0, len(preds)):
-        if preds[i] > best_value:
-            best_value = preds[i]
-            best_index = i
-    if best_value >= confidence_threshold:
-        return best_index
-    return -1
+    return model.predict(np.asarray([x]), verbose=0)[0]
 
 
 # convert an index from the outputs to a class name
@@ -402,4 +393,6 @@ def train(training_data_filename, max_epochs):
     convert_model_to_tf(os.path.join(base_dir, 'data/intent_network_full_model.h5'), os.path.join(base_dir, 'logdir'))
 
     elapsed_time = time.time() - start_time
-    logging.info("processing time:" + str(elapsed_time) + "seconds")
+    logging.info("neural network training time: {:.2f} seconds".format(elapsed_time))
+
+    return model, words, classes

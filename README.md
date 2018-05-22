@@ -1,4 +1,4 @@
-# text parser
+# text parser and intent detection demo
 
 ## installation
 Setup your virtual environment and install the required dependencies.  Written using Python 3.6.

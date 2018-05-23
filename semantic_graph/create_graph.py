@@ -104,6 +104,9 @@ def create_graph(in_json_file_list, graph_output_filename, max_related_score=0.7
         set_words.sort()
         final_set[w] = set_words
 
+    # todo: filter journo crap
+    # now check the final word set relative to known semantic relationships using word2vec distance measurements
+
     # save to file
     with open(graph_output_filename, 'wt') as writer:
         for key in final_set.keys():

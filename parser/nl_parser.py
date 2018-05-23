@@ -5,7 +5,8 @@ import sys
 
 
 # use spacy small model, disable ner and statistical parser
-nlp = en_core_web_sm.load(disable=['ner'])  # ~ 30% faster without NER
+nlp = en_core_web_sm.load(disable=['parser', 'ner'])  # ~5x faster without parser and ner
+nlp.add_pipe(nlp.create_pipe('sentencizer'))  # needs this instead
 
 # unicode characters that need special attention / replacement
 white_space = {'\t',  '\r',  '\n', '\u0008', '\ufeff', '\u303f', '\u3000', '\u2420', '\u2408', '\u202f', '\u205f', '\u2000', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200a', '\u200b'}
@@ -46,10 +47,7 @@ def parse_text(text):
                 ancestors.append(an.i)
             text = token.text.strip()
             if len(text) > 0:  # keep the tags we want - add others here
-                token_list.append({'text': text, 'i': token.i, 'tag': token.tag_, 'dep': token.dep_,
-                                   'lemma': token.lemma_, 'pos': token.pos_, 'lefts': [t.i for t in token.lefts],
-                                   'rights': [t.i for t in token.rights], 'head': token.head.i,
-                                   'ent_type': token.ent_type_, 'ancestors': ancestors})
+                token_list.append({'text': text, 'i': token.i, 'tag': token.tag_, 'lemma': token.lemma_})
         return token_list
 
     # spaCy magic
@@ -61,6 +59,8 @@ def parse_text(text):
 
 
 if __name__ == "__main__":
+
+    parse_text('he was glad to see her.')
 
     if len(sys.argv) != 3:
         print("takes two parameters: /path/to/file.txt /path/to/parsed/output/file.txt")

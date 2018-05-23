@@ -381,3 +381,6 @@ helpdesk::i 'd like to speak to someone on the help-desk
 helpdesk::i want to converse with someone on the help-desk
 helpdesk::i need to converse with someone on the help-desk
 helpdesk::i 'd like to converse with someone on the help-desk
+helpdesk::put me through to the helpdesk
+helpdesk::put me through to the help desk
+helpdesk::put me through to the help-desk

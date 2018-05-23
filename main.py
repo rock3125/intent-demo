@@ -41,14 +41,12 @@ def local_predict(user_input):
 # train a neural network for intent detection
 model, v2i, f2i = train('intent_training.txt', 10000)
 
-for i in range(0,5):
-    print()
-
 # test the new model
 # local_predict('I need to talk to the ceo !')
 # local_predict('can I talk to someone at your help desk please ?')
 
 import fileinput
+print()
 for line in fileinput.input():
     line = line.strip()
     if len(line) > 0:

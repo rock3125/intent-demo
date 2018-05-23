@@ -4,9 +4,8 @@ import json
 import sys
 
 
-# use spacy small model
-nlp = en_core_web_sm.load()
-
+# use spacy small model, disable ner and statistical parser
+nlp = en_core_web_sm.load(disable=['ner'])  # ~ 30% faster without NER
 
 # unicode characters that need special attention / replacement
 white_space = {'\t',  '\r',  '\n', '\u0008', '\ufeff', '\u303f', '\u3000', '\u2420', '\u2408', '\u202f', '\u205f', '\u2000', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200a', '\u200b'}

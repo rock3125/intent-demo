@@ -1,14 +1,13 @@
-from trainer.train import train, predict, prediction_to_class, bow_count
+from trainer.train import train, predict, prediction_to_class
 
 
 # run predict for some text and output formatted info
 def local_predict(user_input):
     # test the new model
-    num_words_in_input = bow_count(user_input, v2i)
-    if num_words_in_input == 0:
+    predictions = predict(model, user_input, v2i)
+    if len(predictions) == 0:
         print("Sorry, I do not understand your query\n")
     else:
-        predictions = predict(model, user_input, v2i)
         best = -1
         best_value = 0.0
         for i in range(0, len(predictions)):

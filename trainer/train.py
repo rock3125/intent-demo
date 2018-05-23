@@ -198,7 +198,6 @@ def bow(sentence, words):
     # bag of words
     bag = [0] * len(words)
     counter = 0
-    not_found = 0
     for s in sentence_words:
         if s not in ignore_words:
             found = False
@@ -209,36 +208,14 @@ def bow(sentence, words):
                     break
             if found:
                 counter += 1
-            else:
-                not_found += 1
-    if counter > 0:
-        return np.asarray(bag), not_found / counter
-    else:
-        return np.asarray(bag), 1.0
-
-
-# return how many words in the sentence match the words of the neural network
-def bow_count(sentence, words):
-    # tokenize the pattern
-    sentence_words = clean_up_sentence(sentence)
-    counter = 0
-    for s in sentence_words:
-        if s not in ignore_words and s not in avoid_verb_lemmas:
-            found = False
-            for i, w in enumerate(words):
-                if w == s:
-                    found = True
-                    break
-            if found:
-                counter += 1
-    return counter
+    return np.asarray(bag), counter
 
 
 # perform a prediction using the model and a language sntence
-def predict(model, sentence, words, confidence_threshold=0.5, word_miss_threshold=0.7):
-    x, miss_ratio = bow(sentence.lower(), words)
-    if miss_ratio >= word_miss_threshold:  # didn't find enough words to make it worth matching
-        return -1
+def predict(model, sentence, words):
+    x, num_words = bow(sentence.lower(), words)
+    if num_words == 0:  # couldn't find any words
+        return []
     # input layer is our bag of words
     return model.predict(np.asarray([x]), verbose=0)[0]
 

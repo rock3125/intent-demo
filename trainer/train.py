@@ -12,8 +12,9 @@ from keras.models import model_from_json
 # import keras.callbacks
 from shutil import copyfile
 from parser.nl_parser import parse_text
-from semantic_graph.create_graph import avoid_verb_lemmas
 
+# aux verbs - these are verbs you should avoid as they are commonly used as auxiliary verbs in English
+avoid_verb_lemmas = {'be', 'have', 'do'}
 
 # tokens to ignore
 ignore_words = {'?', '!', '.', '<', '>', ',', ' ', '"', '\'', '(', ')'}

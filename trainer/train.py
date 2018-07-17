@@ -170,8 +170,8 @@ def _train(model_name, X, y, x_test, y_test, classes, words, max_epochs=100, max
             model.add(Dropout(dropout_percent))
         model.add(Dense(len(classes), input_shape=(hidden_neurons,), activation='softmax'))
 
-    # always compile the model
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # always compile the model - rmsprop, adadelta, adam, adagrad
+    model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
     # tensorboard use: tensorboard --logdir ./graph
     # tb_call_back = keras.callbacks.TensorBoard(log_dir='./graph', histogram_freq=1, write_graph=True,

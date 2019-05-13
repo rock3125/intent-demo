@@ -1,5 +1,5 @@
 spacy
 numpy
-tensorflow==1.5
+tensorflow
 keras
 h5py
